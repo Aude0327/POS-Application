@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QuickBite POS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="kiosk-shell">
+      <header class="top-bar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">Q</span>
+          <div>
+            <p class="eyebrow">SELF-SERVICE KIOSK</p>
+            <h1>QuickBite</h1>
+          </div>
+        </div>
+        <div class="order-status" aria-label="Current order status">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span>New order</span>
+        </div>
+      </header>
+
+      <section class="selection-area screen" id="selection-screen" aria-labelledby="selection-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">STEP 1 OF 3</p>
+            <h2 id="selection-title">Choose your items</h2>
+          </div>
+          <p class="helper-text">Tap an item to add it to your order.</p>
+        </div>
+
+        <div class="selection-layout">
+          <div class="product-grid" id="product-grid">
+          <button class="product-card" type="button" data-product="Coffee" data-price="95">
+            <span class="product-icon" aria-hidden="true">☕</span>
+            <span class="product-name">Coffee</span>
+            <span class="product-price">₱95.00</span>
+          </button>
+          <button class="product-card" type="button" data-product="Sandwich" data-price="145">
+            <span class="product-icon" aria-hidden="true">🥪</span>
+            <span class="product-name">Sandwich</span>
+            <span class="product-price">₱145.00</span>
+          </button>
+          <button class="product-card" type="button" data-product="Soft Drink" data-price="65">
+            <span class="product-icon" aria-hidden="true">🥤</span>
+            <span class="product-name">Soft Drink</span>
+            <span class="product-price">₱65.00</span>
+          </button>
+          <button class="product-card" type="button" data-product="Cookies" data-price="75">
+            <span class="product-icon" aria-hidden="true">🍪</span>
+            <span class="product-name">Cookies</span>
+            <span class="product-price">₱75.00</span>
+          </button>
+          <button class="product-card" type="button" data-product="Bottled Water" data-price="35">
+            <span class="product-icon" aria-hidden="true">💧</span>
+            <span class="product-name">Bottled Water</span>
+            <span class="product-price">₱35.00</span>
+          </button>
+          <button class="product-card" type="button" data-product="Chocolate" data-price="85">
+            <span class="product-icon" aria-hidden="true">🍫</span>
+            <span class="product-name">Chocolate</span>
+            <span class="product-price">₱85.00</span>
+          </button>
+          </div>
+
+          <aside class="cart-panel" aria-labelledby="cart-title">
+            <div class="cart-panel-heading">
+              <div>
+                <p class="eyebrow">CURRENT ORDER</p>
+                <h3 id="cart-title">Your cart</h3>
+              </div>
+              <span class="cart-count" id="item-count">0</span>
+            </div>
+            <div class="cart-items" id="cart-items" aria-live="polite">
+              <p class="empty-cart">Your selected items will appear here.</p>
+            </div>
+            <div class="cart-total">
+              <span>Total</span>
+              <strong id="order-total">₱0.00</strong>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <footer class="order-bar">
+        <div>
+          <p class="order-label">YOUR ORDER</p>
+          <p class="order-summary" id="order-summary">No items selected</p>
+        </div>
+        <button class="view-order-button" type="button" id="continue-summary-button" disabled>
+          Continue to Order Summary
+        </button>
+      </footer>
+
+      <section class="summary-area screen is-hidden" id="summary-screen" aria-labelledby="summary-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">STEP 2 OF 3</p>
+            <h2 id="summary-title">Order summary</h2>
+          </div>
+          <p class="helper-text">Please review your order before payment.</p>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-table-labels" aria-hidden="true">
+            <span>Item</span><span>Qty.</span><span>Unit price</span><span>Subtotal</span>
+          </div>
+          <div id="summary-items" class="summary-items"></div>
+          <div class="summary-total">
+            <span>Total amount</span>
+            <strong id="summary-total">₱0.00</strong>
+          </div>
+        </div>
+
+        <div class="summary-actions">
+          <button class="secondary-button" type="button" id="back-button">Back to items</button>
+          <button class="view-order-button" type="button" id="payment-button">Continue to Payment</button>
+        </div>
+      </section>
+
+      <section class="payment-area screen is-hidden" id="payment-screen" aria-labelledby="payment-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">STEP 3 OF 3</p>
+            <h2 id="payment-title">Choose payment method</h2>
+          </div>
+          <p class="helper-text">Amount due: <strong id="payment-total">₱0.00</strong></p>
+        </div>
+
+        <div class="payment-options" id="payment-options">
+          <button class="payment-option" type="button" data-method="cash">
+            <span class="payment-icon" aria-hidden="true">₱</span>
+            <span>Cash</span>
+            <small>Pay at the kiosk</small>
+          </button>
+          <button class="payment-option" type="button" data-method="qr">
+            <span class="payment-icon" aria-hidden="true">▦</span>
+            <span>QR Payment</span>
+            <small>Scan with your phone</small>
+          </button>
+          <button class="payment-option" type="button" data-method="card">
+            <span class="payment-icon" aria-hidden="true">▰</span>
+            <span>Credit / Debit Card</span>
+            <small>Tap, insert, or swipe</small>
+          </button>
+        </div>
+
+        <div class="payment-detail is-hidden" id="cash-panel">
+          <h3>Cash payment</h3>
+          <p class="amount-due">Total due <strong id="cash-total">₱0.00</strong></p>
+          <label class="payment-label" for="amount-paid">Amount received</label>
+          <input id="amount-paid" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Enter amount received" />
+          <p class="payment-message" id="cash-message" aria-live="polite"></p>
+          <button class="view-order-button" type="button" id="cash-pay-button">Pay Now</button>
+        </div>
+
+        <div class="payment-detail is-hidden" id="qr-panel">
+          <h3>QR payment</h3>
+          <p class="amount-due">Amount to pay <strong id="qr-total">₱0.00</strong></p>
+          <div class="qr-placeholder" aria-label="Simulated QR code" role="img"><span>▣</span></div>
+          <p class="payment-instructions">Open your payment app and scan this QR code. Confirm after your payment is complete.</p>
+          <button class="view-order-button" type="button" id="qr-confirm-button">Confirm Payment</button>
+        </div>
+
+        <div class="payment-detail is-hidden" id="card-panel">
+          <h3>Card payment</h3>
+          <p class="amount-due">Amount due <strong id="card-total">₱0.00</strong></p>
+          <p class="card-instruction" aria-hidden="true">▰</p>
+          <p class="payment-instructions">Please tap, insert, or swipe your card.</p>
+          <button class="view-order-button" type="button" id="card-process-button">Process Payment</button>
+        </div>
+
+        <div class="payment-success is-hidden" id="payment-success" aria-live="polite">
+          <span class="success-check" aria-hidden="true">✓</span>
+          <p class="eyebrow">PAYMENT SUCCESSFUL</p>
+          <h3>Thank you!</h3>
+          <div class="confirmation-details">
+            <p>Transaction amount <strong id="confirmation-total">₱0.00</strong></p>
+            <p>Amount paid <strong id="confirmation-paid">₱0.00</strong></p>
+            <p>Payment method <strong id="confirmation-method">—</strong></p>
+            <p>Reference number <strong id="confirmation-number">—</strong></p>
+          </div>
+          <button class="view-order-button" type="button" id="view-receipt-button">View Receipt</button>
+        </div>
+
+        <button class="secondary-button payment-back" type="button" id="payment-back-button">Back to order summary</button>
+      </section>
+
+      <section class="receipt-area screen is-hidden" id="receipt-screen" aria-labelledby="receipt-title">
+        <div class="receipt-card">
+          <div class="receipt-header">
+            <span class="brand-mark" aria-hidden="true">Q</span>
+            <p class="eyebrow">QUICKBITE POS</p>
+            <h2 id="receipt-title">Payment receipt</h2>
+            <p id="receipt-date"></p>
+            <strong id="receipt-number"></strong>
+          </div>
+          <div class="receipt-items" id="receipt-items"></div>
+          <div class="receipt-total-line"><span>Total</span><strong id="receipt-total">₱0.00</strong></div>
+          <div class="receipt-payment-details">
+            <p><span>Payment method</span><strong id="receipt-method">—</strong></p>
+            <p><span>Amount paid</span><strong id="receipt-paid">₱0.00</strong></p>
+            <p><span>Change</span><strong id="receipt-change">₱0.00</strong></p>
+            <p><span>Status</span><strong class="paid-status">Paid</strong></p>
+          </div>
+        </div>
+        <button class="view-order-button new-transaction-button" type="button" id="new-transaction-button">New Transaction</button>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
