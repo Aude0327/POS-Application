@@ -1,16 +1,25 @@
 const order = [];
 let transactionCounter = 0;
 let completedTransaction = null;
+const VAT_RATE = 0.12;
+const discountOptions = {
+  0: "No Discount",
+  0.1: "Student Discount",
+  0.2: "Senior Citizen / PWD Discount",
+};
 const productGrid = document.querySelector("#product-grid");
 const itemCount = document.querySelector("#item-count");
 const orderSummary = document.querySelector("#order-summary");
 const orderTotal = document.querySelector("#order-total");
+const discountSelect = document.querySelector("#discount-select");
+const cartCalculation = document.querySelector("#cart-calculation");
 const cartItems = document.querySelector("#cart-items");
 const continueSummaryButton = document.querySelector("#continue-summary-button");
 const selectionScreen = document.querySelector("#selection-screen");
 const summaryScreen = document.querySelector("#summary-screen");
 const summaryItems = document.querySelector("#summary-items");
 const summaryTotal = document.querySelector("#summary-total");
+const summaryCalculation = document.querySelector("#summary-calculation");
 const backButton = document.querySelector("#back-button");
 const orderBar = document.querySelector(".order-bar");
 const paymentButton = document.querySelector("#payment-button");
@@ -22,6 +31,7 @@ const paymentPanels = document.querySelectorAll(".payment-detail");
 const cashTotal = document.querySelector("#cash-total");
 const qrTotal = document.querySelector("#qr-total");
 const cardTotal = document.querySelector("#card-total");
+const paymentBreakdowns = document.querySelectorAll(".payment-breakdown");
 const amountPaid = document.querySelector("#amount-paid");
 const cashMessage = document.querySelector("#cash-message");
 const cashPayButton = document.querySelector("#cash-pay-button");
@@ -32,6 +42,7 @@ const confirmationTotal = document.querySelector("#confirmation-total");
 const confirmationPaid = document.querySelector("#confirmation-paid");
 const confirmationMethod = document.querySelector("#confirmation-method");
 const confirmationNumber = document.querySelector("#confirmation-number");
+const confirmationBreakdown = document.querySelector("#confirmation-breakdown");
 const viewReceiptButton = document.querySelector("#view-receipt-button");
 const receiptScreen = document.querySelector("#receipt-screen");
 const receiptDate = document.querySelector("#receipt-date");
@@ -41,9 +52,11 @@ const receiptTotal = document.querySelector("#receipt-total");
 const receiptMethod = document.querySelector("#receipt-method");
 const receiptPaid = document.querySelector("#receipt-paid");
 const receiptChange = document.querySelector("#receipt-change");
+const receiptCalculation = document.querySelector("#receipt-calculation");
 const newTransactionButton = document.querySelector("#new-transaction-button");
 
 const formatPrice = (price) => `₱${price.toFixed(2)}`;
+let selectedDiscountRate = 0;
 
 productGrid.addEventListener("click", (event) => {
   const card = event.target.closest(".product-card");
@@ -82,16 +95,33 @@ cartItems.addEventListener("click", (event) => {
   renderOrder();
 });
 
-function getOrderTotal() {
-  return order.reduce((total, item) => total + item.price * item.quantity, 0);
+discountSelect.addEventListener("change", () => {
+  selectedDiscountRate = Number(discountSelect.value);
+  renderOrder();
+});
+
+function getOrderCalculation() {
+  const subtotal = order.reduce((total, item) => total + item.price * item.quantity, 0);
+  const discountAmount = subtotal * selectedDiscountRate;
+  const discountedSubtotal = subtotal - discountAmount;
+  const vatAmount = discountedSubtotal * VAT_RATE;
+
+  return {
+    subtotal,
+    discountRate: selectedDiscountRate,
+    discountAmount,
+    vatAmount,
+    finalTotal: discountedSubtotal + vatAmount,
+  };
 }
 
 function renderOrder() {
   const count = order.reduce((total, item) => total + item.quantity, 0);
-  const total = getOrderTotal();
+  const calculation = getOrderCalculation();
   itemCount.textContent = count;
   orderSummary.textContent = count ? `${count} item${count === 1 ? "" : "s"} selected` : "No items selected";
-  orderTotal.textContent = formatPrice(total);
+  orderTotal.textContent = formatPrice(calculation.finalTotal);
+  cartCalculation.innerHTML = renderCalculationLines(calculation);
   continueSummaryButton.disabled = count === 0;
 
   cartItems.innerHTML = order.length
@@ -152,7 +182,7 @@ paymentOptions.addEventListener("click", (event) => {
 
 cashPayButton.addEventListener("click", () => {
   const paid = Number(amountPaid.value);
-  const total = getOrderTotal();
+  const total = getOrderCalculation().finalTotal;
 
   if (amountPaid.validity.badInput) {
     cashMessage.textContent = "Enter a valid numeric payment amount.";
@@ -196,6 +226,8 @@ viewReceiptButton.addEventListener("click", () => {
 newTransactionButton.addEventListener("click", () => {
   order.splice(0, order.length);
   completedTransaction = null;
+  selectedDiscountRate = 0;
+  discountSelect.value = "0";
   renderOrder();
   resetPaymentAndReceipt();
   receiptScreen.classList.add("is-hidden");
@@ -212,30 +244,39 @@ function renderSummary() {
       <span>${formatPrice(item.price)}</span>
       <strong>${formatPrice(item.price * item.quantity)}</strong>
     </div>`).join("");
-  summaryTotal.textContent = formatPrice(getOrderTotal());
+  const calculation = getOrderCalculation();
+  summaryCalculation.innerHTML = renderCalculationLines(calculation);
+  summaryTotal.textContent = formatPrice(calculation.finalTotal);
 }
 
 function renderPaymentTotals() {
-  const total = formatPrice(getOrderTotal());
+  const calculation = getOrderCalculation();
+  const total = formatPrice(calculation.finalTotal);
   paymentTotal.textContent = total;
   cashTotal.textContent = total;
   qrTotal.textContent = total;
   cardTotal.textContent = total;
+  paymentBreakdowns.forEach((breakdown) => {
+    breakdown.innerHTML = renderCalculationLines(calculation);
+  });
 }
 
-function showPaymentSuccess(method, change, paid = getOrderTotal()) {
+function showPaymentSuccess(method, change, paid = getOrderCalculation().finalTotal) {
   transactionCounter += 1;
+  const calculation = getOrderCalculation();
   completedTransaction = {
     number: `TXN-${String(transactionCounter).padStart(3, "0")}`,
     date: new Date(),
     items: order.map((item) => ({ ...item })),
-    total: getOrderTotal(),
+    calculation,
+    total: calculation.finalTotal,
     method,
     paid,
     change,
   };
   paymentPanels.forEach((panel) => panel.classList.add("is-hidden"));
   paymentSuccess.classList.remove("is-hidden");
+  confirmationBreakdown.innerHTML = renderCalculationLines(calculation);
   confirmationTotal.textContent = formatPrice(completedTransaction.total);
   confirmationPaid.textContent = formatPrice(paid);
   confirmationMethod.textContent = method;
@@ -252,10 +293,20 @@ function renderReceipt() {
       <div><strong>${item.name}</strong><span>Qty ${item.quantity} × ${formatPrice(item.price)}</span></div>
       <strong>${formatPrice(item.price * item.quantity)}</strong>
     </div>`).join("");
+  receiptCalculation.innerHTML = renderCalculationLines(completedTransaction.calculation);
   receiptTotal.textContent = formatPrice(completedTransaction.total);
   receiptMethod.textContent = completedTransaction.method;
   receiptPaid.textContent = formatPrice(completedTransaction.paid);
   receiptChange.textContent = formatPrice(completedTransaction.change);
+}
+
+function renderCalculationLines(calculation) {
+  const percentage = Math.round(calculation.discountRate * 100);
+
+  return `
+    <p><span>Subtotal</span><strong>${formatPrice(calculation.subtotal)}</strong></p>
+    <p><span>${discountOptions[calculation.discountRate]} (${percentage}%)</span><strong>−${formatPrice(calculation.discountAmount)}</strong></p>
+    <p><span>VAT (12%)</span><strong>${formatPrice(calculation.vatAmount)}</strong></p>`;
 }
 
 function resetPaymentAndReceipt() {
@@ -269,11 +320,15 @@ function resetPaymentAndReceipt() {
   confirmationPaid.textContent = formatPrice(0);
   confirmationMethod.textContent = "—";
   confirmationNumber.textContent = "—";
+  confirmationBreakdown.innerHTML = renderCalculationLines(getOrderCalculation());
   receiptDate.textContent = "";
   receiptNumber.textContent = "";
   receiptItems.innerHTML = "";
+  receiptCalculation.innerHTML = renderCalculationLines(getOrderCalculation());
   receiptTotal.textContent = formatPrice(0);
   receiptMethod.textContent = "—";
   receiptPaid.textContent = formatPrice(0);
   receiptChange.textContent = formatPrice(0);
 }
+
+renderOrder();
